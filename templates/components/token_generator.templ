@@ -1,0 +1,42 @@
+// templates/components/token_generator.templ
+package components
+
+import "fmt"
+
+templ TokenGenerator() {
+	<div class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-slate-200">
+		<h2 class="text-xl font-bold text-slate-800 mb-4">Issue Clinic Token</h2>
+		<form
+			hx-post="/tokens"
+			hx-target="#token-result"
+			hx-swap="innerHTML"
+			class="space-y-4"
+		>
+			<div>
+				<label class="block text-sm font-medium text-slate-700">Student ID</label>
+				<input
+					type="number"
+					name="student_id"
+					placeholder="e.g. 2004001"
+					required
+					class="mt-1 w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+				/>
+			</div>
+			<button
+				type="submit"
+				class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition"
+			>
+				Get Token
+			</button>
+		</form>
+		<div id="token-result" class="mt-4"></div>
+	</div>
+}
+
+templ TokenDisplay(tokenId int64, studentName string) {
+	<div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-center">
+		<span class="text-xs uppercase font-bold text-emerald-600 tracking-wider">Token Issued</span>
+		<div class="text-4xl font-extrabold text-emerald-700 my-1">#{ fmt.Sprint(tokenId) }</div>
+		<p class="text-sm text-slate-600">Student: <strong>{ studentName }</strong></p>
+	</div>
+}
