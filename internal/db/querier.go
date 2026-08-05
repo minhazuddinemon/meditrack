@@ -7,21 +7,33 @@ package db
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 type Querier interface {
 	AddPrescribedMedicine(ctx context.Context, arg AddPrescribedMedicineParams) error
 	AddRequiredTest(ctx context.Context, arg AddRequiredTestParams) error
 	AddSymptom(ctx context.Context, arg AddSymptomParams) error
+	CompleteTokenStatus(ctx context.Context, arg CompleteTokenStatusParams) error
 	CreatePrescription(ctx context.Context, arg CreatePrescriptionParams) (sql.Result, error)
+	CreateStudent(ctx context.Context, arg CreateStudentParams) error
 	GenerateToken(ctx context.Context, arg GenerateTokenParams) error
-	GetNextTokenIDForToday(ctx context.Context, visitDate time.Time) (interface{}, error)
+	GetAllDoctors(ctx context.Context) ([]GetAllDoctorsRow, error)
+	GetAllMedicines(ctx context.Context) ([]Medicine, error)
+	GetAllTests(ctx context.Context) ([]Test, error)
+	GetDoctorByID(ctx context.Context, docID int32) (Doctor, error)
+	GetDoctorQueueToday(ctx context.Context, docID int32) ([]GetDoctorQueueTodayRow, error)
+	GetNextTokenIDForToday(ctx context.Context) (interface{}, error)
 	GetPrescriptionDetails(ctx context.Context, pID int32) (GetPrescriptionDetailsRow, error)
+	GetPrescriptionFullHeader(ctx context.Context, pID int32) (GetPrescriptionFullHeaderRow, error)
+	GetPrescriptionLabTests(ctx context.Context, pID int32) ([]GetPrescriptionLabTestsRow, error)
 	GetPrescriptionMedicines(ctx context.Context, pID int32) ([]GetPrescriptionMedicinesRow, error)
 	GetPrescriptionSymptoms(ctx context.Context, pID int32) ([]string, error)
 	GetStudentByID(ctx context.Context, stID int32) (Student, error)
+	GetStudentLabResults(ctx context.Context, stID int32) ([]GetStudentLabResultsRow, error)
+	GetStudentPrescriptionHistory(ctx context.Context, stID int32) ([]GetStudentPrescriptionHistoryRow, error)
+	GetStudentPrescriptionList(ctx context.Context, stID int32) ([]GetStudentPrescriptionListRow, error)
 	GetTodayTokens(ctx context.Context) ([]GetTodayTokensRow, error)
+	UpdateTokenStatus(ctx context.Context, arg UpdateTokenStatusParams) error
 }
 
 var _ Querier = (*Queries)(nil)

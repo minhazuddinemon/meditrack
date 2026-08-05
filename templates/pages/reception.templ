@@ -1,0 +1,117 @@
+package pages
+
+import (
+	"fmt"
+	"meditrack/internal/db"
+	"meditrack/templates/layout"
+)
+
+templ Reception(tokens []db.GetTodayTokensRow, doctors []db.GetAllDoctorsRow) {
+	@layout.Base("Reception Desk") {
+		<h2>🎟️ Reception Desk</h2>
+		<div class="grid">
+			<div>
+				<article>
+					<h4>1. Lookup & Issue Token</h4>
+					<form hx-post="/reception/token" hx-target="#queue-table" hx-swap="outerHTML">
+						<label for="st_id">
+							Student ID
+							<input type="number" id="st_id" name="st_id" placeholder="e.g. 20210014" required/>
+						</label>
+						<label for="doc_id">
+							Select Doctor
+							<select id="doc_id" name="doc_id" required>
+								<option value="" disabled selected>-- Choose Assigned Doctor --</option>
+								for _, d := range doctors {
+									<option value={ fmt.Sprint(d.DocID) }>
+										Dr. { d.Name } ({ d.Specialization })
+									</option>
+								}
+							</select>
+						</label>
+						<button type="submit">Issue Daily Token</button>
+					</form>
+				</article>
+				<article>
+					<h4>Quick Register Student</h4>
+					<form hx-post="/reception/register-student" hx-target="#register-message">
+						<div id="register-message"></div>
+						<div class="grid">
+							<input type="number" name="st_id" placeholder="Student ID" required/>
+							<input type="text" name="name" placeholder="Full Name" required/>
+						</div>
+						<div class="grid">
+							<select name="gender" required>
+								<option value="M">Male</option>
+								<option value="F">Female</option>
+								<option value="O">Other</option>
+							</select>
+							<input type="text" name="dept" placeholder="Dept (e.g. CSE)" required/>
+						</div>
+						<div class="grid">
+							<input type="text" name="contact" placeholder="Phone Number"/>
+							<input type="text" name="blood_group" placeholder="Blood Group (e.g. A+)"/>
+						</div>
+						<button type="submit" class="secondary">Register Student</button>
+					</form>
+				</article>
+			</div>
+			<div>
+				<article>
+					<h4>Live Today's Queue</h4>
+					@TodayQueueTable(tokens)
+				</article>
+			</div>
+		</div>
+	}
+}
+
+templ TodayQueueTable(tokens []db.GetTodayTokensRow) {
+	<div id="queue-table">
+		<table>
+			<thead>
+				<tr>
+					<th>Token #</th>
+					<th>Time</th>
+					<th>Student Details</th>
+					<th>Assigned Doctor</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				if len(tokens) == 0 {
+					<tr>
+						<td colspan="5" style="text-align: center; color: var(--pico-muted-color);">No tokens issued today yet.</td>
+					</tr>
+				}
+				for _, t := range tokens {
+					<tr>
+						<td><strong>#{ fmt.Sprint(t.TokenID) }</strong></td>
+						<td>{ t.VisitTime }</td>
+						<td>
+							<strong>{ t.StudentName }</strong>
+							<br/>
+							<small>ID: { fmt.Sprint(t.StID) } | { t.Dept.String }</small>
+						</td>
+						<td>
+							Dr. { t.DoctorName }
+							<br/>
+							<small>({ t.Specialization })</small>
+						</td>
+						<td>
+							if t.Status == "WAITING" {
+								<mark style="background: #fff3cd; color: #856404; padding: 0.2rem 0.5rem; border-radius: 4px;">⌛ Waiting</mark>
+							} else if t.Status == "IN_CONSULTATION" {
+								<mark style="background: #d1ecf1; color: #0c5460; padding: 0.2rem 0.5rem; border-radius: 4px;">🩺 In Consult</mark>
+							} else if t.Status == "COMPLETED" {
+								<mark style="background: #d4edda; color: #155724; padding: 0.2rem 0.5rem; border-radius: 4px;">✅ Completed</mark>
+							} else {
+								<mark style="padding: 0.2rem 0.5rem; border-radius: 4px;">{ t.Status }</mark>
+							}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}

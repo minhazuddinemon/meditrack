@@ -8,6 +8,7 @@ import (
 
 	dbGen "meditrack/internal/db"
 	"meditrack/internal/handler"
+	"meditrack/templates/pages"
 )
 
 func main() {
@@ -29,20 +30,38 @@ func main() {
 
 	queries := dbGen.New(dbConn)
 
-	// Initialize Token Handler
-	tokenHandler := handler.NewTokenHandler(queries, dbConn)
-
 	mux := http.NewServeMux()
 
-	// Serve static files
+	// Serve static files (matches /static/*)
 	fileServer := http.FileServer(http.Dir("./static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
 
-	// Root page ({$} ensures EXACT match on "/" so it doesn't overlap /static/)
-	mux.HandleFunc("GET /{$}", tokenHandler.ShowKiosk)
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		pages.Landing().Render(r.Context(), w)
+	})
 
-	// API / HTMX Routes
-	mux.HandleFunc("POST /tokens", tokenHandler.IssueToken)
+	receptionHandler := &handler.ReceptionHandler{Queries: queries}
+	mux.Handle("GET /reception", receptionHandler)
+	mux.HandleFunc("POST /reception/token", receptionHandler.IssueToken)
+	mux.HandleFunc("POST /reception/register-student", receptionHandler.RegisterStudent)
+
+	// Doctor Module
+	// Doctor Module
+	doctorHandler := &handler.DoctorHandler{Queries: queries, RawDB: dbConn}
+	mux.Handle("GET /doctor", doctorHandler)
+	mux.HandleFunc("POST /doctor/login", doctorHandler.Login)
+	mux.HandleFunc("GET /doctor/logout", doctorHandler.Logout)
+	mux.HandleFunc("GET /doctor/patient/{st_id}", doctorHandler.LoadPatientWorkspace)
+	mux.HandleFunc("GET /doctor/med-row", doctorHandler.GetMedicineRow)
+	mux.HandleFunc("POST /doctor/prescription", doctorHandler.CreatePrescription)
+
+	// Student Vault Module
+	vaultHandler := &handler.VaultHandler{Queries: queries}
+	mux.Handle("GET /vault", vaultHandler)
+	mux.HandleFunc("GET /vault/history", vaultHandler.GetStudentHistory)
+	mux.HandleFunc("GET /vault/rx/{p_id}", vaultHandler.ViewPrescription)
+
+	// Root page ({$} ensures EXACT match on "/" so it doesn't overlap /static/)
 	port := getEnv("PORT", "8080")
 	fmt.Printf("Server listening on http://localhost:%s\n", port)
 	if err := http.ListenAndServe(":"+port, mux); err != nil {

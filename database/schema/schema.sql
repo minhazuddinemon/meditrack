@@ -7,7 +7,7 @@ CREATE TABLE Student (
     dept VARCHAR(10),
     dob DATE,
     blood_group VARCHAR(5)
-    
+
 );
 
 -- 2. Token Table
@@ -16,15 +16,13 @@ CREATE TABLE Token (
     visit_date DATE NOT NULL,
     visit_time TIME NOT NULL,
     st_id INT NOT NULL,
-    
 
-    
     PRIMARY KEY (token_id, visit_date),
-    CONSTRAINT fk_token_student 
-        FOREIGN KEY (st_id) 
-        REFERENCES Student(st_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+    CONSTRAINT fk_token_student
+    FOREIGN KEY (st_id)
+    REFERENCES Student (st_id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
 
 -- 1. Doctor Table (Must be created before Prescription)
@@ -33,7 +31,7 @@ CREATE TABLE Doctor (
     name VARCHAR(50) NOT NULL,
     specialization VARCHAR(50) NOT NULL,
     contact VARCHAR(15) NOT NULL
-    
+
 );
 
 -- 2. Prescription Table
@@ -42,30 +40,30 @@ CREATE TABLE Prescription (
     p_date DATE DEFAULT (CURRENT_DATE),
     st_id INT NOT NULL,
     doc_id INT NOT NULL,
-    
-    CONSTRAINT fk_prescription_student 
-        FOREIGN KEY (st_id) 
-        REFERENCES Student(st_id)
-        ON UPDATE CASCADE 
-        ON DELETE CASCADE,
-        
-    CONSTRAINT fk_prescription_doctor 
-        FOREIGN KEY (doc_id) 
-        REFERENCES Doctor(doc_id)
-        ON UPDATE CASCADE 
-        ON DELETE RESTRICT
+
+    CONSTRAINT fk_prescription_student
+    FOREIGN KEY (st_id)
+    REFERENCES Student (st_id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_prescription_doctor
+    FOREIGN KEY (doc_id)
+    REFERENCES Doctor (doc_id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
 );
 
 -- 3. Pre_symptoms Table (Multivalued attribute for Prescription)
 CREATE TABLE Pre_symptoms (
     p_id INT NOT NULL,
     symptom VARCHAR(50) NOT NULL,
-    
+
     PRIMARY KEY (p_id, symptom),
-    CONSTRAINT fk_symptoms_prescription 
-        FOREIGN KEY (p_id) 
-        REFERENCES Prescription(p_id)
-        ON DELETE CASCADE
+    CONSTRAINT fk_symptoms_prescription
+    FOREIGN KEY (p_id)
+    REFERENCES Prescription (p_id)
+    ON DELETE CASCADE
 );
 
 
@@ -74,14 +72,14 @@ CREATE TABLE Medicine (
     medicine_name VARCHAR(100) NOT NULL,
     medicine_type VARCHAR(50) NOT NULL,  -- e.g., 'Tablet', 'Syrup', 'Injection'
     manufacturer VARCHAR(100),
-    
+
     PRIMARY KEY (medicine_name, medicine_type)
 );
 
 -- 2. Master Diagnostic Test Catalog Table (#8)
 CREATE TABLE Test (
     test_name VARCHAR(100) PRIMARY KEY,
-    test_fee DECIMAL(8,2) NOT NULL DEFAULT 0.00
+    test_fee DECIMAL(8, 2) NOT NULL DEFAULT 0.00
 );
 
 -- 3. Prescription - Medicine Junction Table (#5 'contain')
@@ -90,18 +88,18 @@ CREATE TABLE Contain (
     medicine_name VARCHAR(100) NOT NULL,
     medicine_type VARCHAR(50) NOT NULL,
     dosage VARCHAR(50), -- Added field (e.g., '1-0-1 after food')
-    
+
     PRIMARY KEY (p_id, medicine_name, medicine_type),
-    
-    CONSTRAINT fk_contain_prescription 
-        FOREIGN KEY (p_id) 
-        REFERENCES Prescription(p_id) 
-        ON DELETE CASCADE,
-        
-    CONSTRAINT fk_contain_medicine 
-        FOREIGN KEY (medicine_name, medicine_type) 
-        REFERENCES Medicine(medicine_name, medicine_type) 
-        ON UPDATE CASCADE
+
+    CONSTRAINT fk_contain_prescription
+    FOREIGN KEY (p_id)
+    REFERENCES Prescription (p_id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_contain_medicine
+    FOREIGN KEY (medicine_name, medicine_type)
+    REFERENCES Medicine (medicine_name, medicine_type)
+    ON UPDATE CASCADE
 );
 
 -- 4. Prescription - Test Junction Table (#6 'requires')
@@ -110,16 +108,28 @@ CREATE TABLE Requires (
     test_name VARCHAR(100) NOT NULL,
     test_date DATE,
     test_result VARCHAR(255),
-    
+
     PRIMARY KEY (p_id, test_name),
-    
-    CONSTRAINT fk_requires_prescription 
-        FOREIGN KEY (p_id) 
-        REFERENCES Prescription(p_id) 
-        ON DELETE CASCADE,
-        
-    CONSTRAINT fk_requires_test 
-        FOREIGN KEY (test_name) 
-        REFERENCES Test(test_name) 
-        ON UPDATE CASCADE
+
+    CONSTRAINT fk_requires_prescription
+    FOREIGN KEY (p_id)
+    REFERENCES Prescription (p_id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_requires_test
+    FOREIGN KEY (test_name)
+    REFERENCES Test (test_name)
+    ON UPDATE CASCADE
 );
+
+
+-- adding two COLUMN to token
+ALTER TABLE Token
+ADD COLUMN doc_id INT NOT NULL,
+ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'WAITING',
+ADD CONSTRAINT fk_token_doctor FOREIGN KEY (doc_id) REFERENCES Doctor (
+    doc_id
+) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- adding doctors pass for login
+ALTER TABLE Doctor ADD COLUMN password VARCHAR(255) NOT NULL DEFAULT '123456';

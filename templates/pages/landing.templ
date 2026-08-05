@@ -1,0 +1,47 @@
+package pages
+
+import "meditrack/templates/layout"
+
+templ Landing() {
+	@layout.Base("Welcome") {
+		<div style="text-align: center; margin-bottom: 2rem;">
+			<h1>WELCOME TO MEDITRACK CAMPUS CLINIC</h1>
+			<p>Select your module to get started</p>
+		</div>
+		<div class="grid">
+			<article>
+				<header><h3>🎟️ Reception & Queue</h3></header>
+				<ul>
+					<li>Search / Register Students</li>
+					<li>Issue Daily Token Number</li>
+					<li>Live Waiting Room Dashboard</li>
+				</ul>
+				<footer>
+					<a href="/reception" role="button" class="contrast">Open Reception Desk ➔</a>
+				</footer>
+			</article>
+			<article>
+				<header><h3>🩺 Doctor Consultation</h3></header>
+				<ul>
+					<li>View Today's Patient Queue</li>
+					<li>Inspect Student Health History</li>
+					<li>Write Digital Prescriptions</li>
+				</ul>
+				<footer>
+					<a href="/doctor" role="button">Open Doctor Console ➔</a>
+				</footer>
+			</article>
+			<article>
+				<header><h3>📜 Student Vault</h3></header>
+				<ul>
+					<li>Search Past Prescriptions</li>
+					<li>Download / Print Rx</li>
+					<li>Check Lab Test Results</li>
+				</ul>
+				<footer>
+					<a href="/vault" role="button" class="secondary">Access My Vault ➔</a>
+				</footer>
+			</article>
+		</div>
+	}
+}

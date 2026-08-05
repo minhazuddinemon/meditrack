@@ -76,6 +76,60 @@ func (q *Queries) CreatePrescription(ctx context.Context, arg CreatePrescription
 	return q.db.ExecContext(ctx, createPrescription, arg.StID, arg.DocID)
 }
 
+const getAllMedicines = `-- name: GetAllMedicines :many
+SELECT medicine_name, medicine_type, manufacturer FROM Medicine ORDER BY medicine_name ASC
+`
+
+func (q *Queries) GetAllMedicines(ctx context.Context) ([]Medicine, error) {
+	rows, err := q.db.QueryContext(ctx, getAllMedicines)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Medicine
+	for rows.Next() {
+		var i Medicine
+		if err := rows.Scan(&i.MedicineName, &i.MedicineType, &i.Manufacturer); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllTests = `-- name: GetAllTests :many
+SELECT test_name, test_fee FROM Test ORDER BY test_name ASC
+`
+
+func (q *Queries) GetAllTests(ctx context.Context) ([]Test, error) {
+	rows, err := q.db.QueryContext(ctx, getAllTests)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Test
+	for rows.Next() {
+		var i Test
+		if err := rows.Scan(&i.TestName, &i.TestFee); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPrescriptionDetails = `-- name: GetPrescriptionDetails :one
 SELECT p.p_id, p.p_date, s.st_id, s.name AS student_name, s.dept, s.blood_group, d.name AS doctor_name, d.specialization
 FROM Prescription p
@@ -164,6 +218,94 @@ func (q *Queries) GetPrescriptionSymptoms(ctx context.Context, pID int32) ([]str
 			return nil, err
 		}
 		items = append(items, symptom)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStudentLabResults = `-- name: GetStudentLabResults :many
+SELECT r.p_id, r.test_name, r.test_date, r.test_result, p.p_date
+FROM Requires r
+JOIN Prescription p ON r.p_id = p.p_id
+WHERE p.st_id = ?
+ORDER BY p.p_date DESC
+`
+
+type GetStudentLabResultsRow struct {
+	PID        int32          `json:"p_id"`
+	TestName   string         `json:"test_name"`
+	TestDate   sql.NullTime   `json:"test_date"`
+	TestResult sql.NullString `json:"test_result"`
+	PDate      sql.NullTime   `json:"p_date"`
+}
+
+func (q *Queries) GetStudentLabResults(ctx context.Context, stID int32) ([]GetStudentLabResultsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getStudentLabResults, stID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentLabResultsRow
+	for rows.Next() {
+		var i GetStudentLabResultsRow
+		if err := rows.Scan(
+			&i.PID,
+			&i.TestName,
+			&i.TestDate,
+			&i.TestResult,
+			&i.PDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStudentPrescriptionHistory = `-- name: GetStudentPrescriptionHistory :many
+SELECT p.p_id, p.p_date, d.name AS doctor_name, d.specialization
+FROM Prescription p
+JOIN Doctor d ON p.doc_id = d.doc_id
+WHERE p.st_id = ?
+ORDER BY p.p_date DESC
+`
+
+type GetStudentPrescriptionHistoryRow struct {
+	PID            int32        `json:"p_id"`
+	PDate          sql.NullTime `json:"p_date"`
+	DoctorName     string       `json:"doctor_name"`
+	Specialization string       `json:"specialization"`
+}
+
+func (q *Queries) GetStudentPrescriptionHistory(ctx context.Context, stID int32) ([]GetStudentPrescriptionHistoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getStudentPrescriptionHistory, stID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetStudentPrescriptionHistoryRow
+	for rows.Next() {
+		var i GetStudentPrescriptionHistoryRow
+		if err := rows.Scan(
+			&i.PID,
+			&i.PDate,
+			&i.DoctorName,
+			&i.Specialization,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

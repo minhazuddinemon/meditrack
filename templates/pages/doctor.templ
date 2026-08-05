@@ -1,0 +1,207 @@
+package pages
+
+import (
+	"database/sql"
+	"fmt"
+	"meditrack/internal/db"
+	"meditrack/templates/layout"
+	"time"
+)
+
+// Helper function to calculate age from DOB
+func calculateAge(dob sql.NullTime) string {
+	if !dob.Valid {
+		return "N/A"
+	}
+	now := time.Now()
+	years := now.Year() - dob.Time.Year()
+
+	// Adjust if birthday hasn't occurred yet this year
+	if now.YearDay() < dob.Time.YearDay() {
+		years--
+	}
+	return fmt.Sprintf("%d yrs", years)
+}
+
+templ DoctorLogin(errMsg string) {
+	@layout.Base("Doctor Login") {
+		<div style="max-width: 420px; margin: 3rem auto;">
+			<article>
+				<header style="text-align: center;">
+					<h3>🩺 Doctor Console Login</h3>
+				</header>
+				if errMsg != "" {
+					<p style="color: red; text-align: center;">{ errMsg }</p>
+				}
+				<form action="/doctor/login" method="POST">
+					<label for="doc_id">
+						Doctor ID
+						<input type="number" id="doc_id" name="doc_id" placeholder="Enter Doctor ID (e.g. 1)" required/>
+					</label>
+					<label for="password">
+						Password
+						<input type="password" id="password" name="password" placeholder="Enter password" required/>
+					</label>
+					<button type="submit">Login to Console</button>
+				</form>
+			</article>
+		</div>
+	}
+}
+
+templ DoctorConsole(doc db.Doctor, tokens []db.GetDoctorQueueTodayRow, medicines []db.Medicine, tests []db.Test) {
+	@layout.Base("Doctor Console") {
+		<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+			<h2>🩺 Doctor Console</h2>
+			<div>
+				<span>Welcome, <strong>Dr. { doc.Name }</strong> ({ doc.Specialization })</span>
+				<a href="/doctor/logout" role="button" class="secondary outline" style="margin-left: 1rem; padding: 0.2rem 0.6rem;">Logout</a>
+			</div>
+		</div>
+		<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+			<!-- Left Panel: Active Queue -->
+			<aside>
+				<article>
+					<h4>My Waiting Queue</h4>
+					<small>Click a student to start consultation</small>
+					<hr/>
+					@DoctorQueueList(tokens)
+				</article>
+			</aside>
+			<!-- Right Workspace: History + Write Rx -->
+			<section id="patient-workspace">
+				<article>
+					<p style="text-align: center; color: #777;">👈 Select a patient from the waiting queue to start</p>
+				</article>
+			</section>
+		</div>
+	}
+}
+
+templ DoctorQueueList(tokens []db.GetDoctorQueueTodayRow) {
+	<div id="doctor-queue">
+		if len(tokens) == 0 {
+			<p style="color: #777; text-align: center; margin-top: 1rem;"><small>No waiting patients in queue.</small></p>
+		}
+		for _, t := range tokens {
+			<div
+				style="padding: 0.6rem; margin-bottom: 0.5rem; border: 1px solid var(--pico-border-color); border-radius: 6px; cursor: pointer; background: var(--pico-card-background-color);"
+				hx-get={ fmt.Sprintf("/doctor/patient/%d", t.StID) }
+				hx-target="#patient-workspace"
+			>
+				<strong>Token #{ fmt.Sprint(t.TokenID) }</strong> - { t.StudentName }
+				<br/>
+				<small>Dept: { t.Dept.String } | ID: { fmt.Sprint(t.StID) }</small>
+			</div>
+		}
+	</div>
+}
+
+templ PatientWorkspace(student db.Student, history []db.GetStudentPrescriptionHistoryRow, medicines []db.Medicine, tests []db.Test, docID int32) {
+	<div>
+		<!-- Patient Banner -->
+		<article style="background: var(--pico-card-background-color); margin-bottom: 1rem;">
+			<header>
+				<h3>{ student.Name } <small>(ID: { fmt.Sprint(student.StID) })</small></h3>
+			</header>
+			<div class="grid">
+				<div><strong>Dept:</strong> { student.Dept.String }</div>
+				<div><strong>Gender:</strong> { student.Gender }</div>
+				<div><strong>Age:</strong> { calculateAge(student.Dob) }</div>
+				<div><strong>Blood Group:</strong> { student.BloodGroup.String }</div>
+				<div><strong>Contact:</strong> { student.Contact.String }</div>
+			</div>
+		</article>
+		<!-- Change: Use explicit flexbox grid or 1fr / 1fr layout with overflow control -->
+		<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+			<!-- Past History Table -->
+			<article style="overflow-x: auto;">
+				<h4>📋 Medical History ({ fmt.Sprint(len(history)) })</h4>
+				if len(history) == 0 {
+					<p><small>No past prescriptions found.</small></p>
+				} else {
+					<table class="striped" style="font-size: 0.85rem; width: 100%;">
+						<thead>
+							<tr>
+								<th>Rx ID</th>
+								<th>Date</th>
+								<th>Doctor</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, h := range history {
+								<tr>
+									<td><strong>#{ fmt.Sprint(h.PID) }</strong></td>
+									<td>
+										if h.PDate.Valid {
+											{ h.PDate.Time.Format("02/01/06") }
+										}
+									</td>
+									<td>Dr. { h.DoctorName }</td>
+									<td>
+										<a
+											href={ templ.SafeURL(fmt.Sprintf("/vault/rx/%d", h.PID)) }
+											target="_blank"
+											role="button"
+											class="outline"
+											style="padding: 0.15rem 0.4rem; font-size: 0.75rem; white-space: nowrap;"
+										>
+											📄 View
+										</a>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			</article>
+			<!-- Write New Prescription Form -->
+			<article>
+				<h4>✍️ New Prescription</h4>
+				<form hx-post="/doctor/prescription" hx-target="#prescription-result">
+					<div id="prescription-result"></div>
+					<input type="hidden" name="st_id" value={ fmt.Sprint(student.StID) }/>
+					<input type="hidden" name="doc_id" value={ fmt.Sprint(docID) }/>
+					<label>
+						Symptoms (Comma separated)
+						<input type="text" name="symptoms" placeholder="e.g. Fever, Cough, Headache" required/>
+					</label>
+					<fieldset>
+						<legend><strong>Prescribed Medicines</strong></legend>
+						<div id="medicine-rows">
+							@MedicineRow(medicines)
+						</div>
+						<button type="button" class="outline secondary" hx-get="/doctor/med-row" hx-target="#medicine-rows" hx-swap="beforeend">
+							+ Add Another Medicine
+						</button>
+					</fieldset>
+					<fieldset>
+						<legend><strong>Required Lab Tests</strong></legend>
+						for _, t := range tests {
+							<label>
+								<input type="checkbox" name="tests" value={ t.TestName }/>
+								{ t.TestName } (${ fmt.Sprintf("%s", t.TestFee) })
+							</label>
+						}
+					</fieldset>
+					<button type="submit">Save Digital Rx & Complete Visit 💾</button>
+				</form>
+			</article>
+		</div>
+	</div>
+}
+
+templ MedicineRow(medicines []db.Medicine) {
+	<div class="grid" style="margin-bottom: 0.5rem;">
+		<select name="medicine_key" required>
+			<option value="" disabled selected>Select Medicine</option>
+			for _, m := range medicines {
+				<option value={ fmt.Sprintf("%s|%s", m.MedicineName, m.MedicineType) }>
+					{ m.MedicineName } ({ m.MedicineType })
+				</option>
+			}
+		</select>
+		<input type="text" name="dosage" placeholder="Dosage (1-0-1 after food)" required/>
+	</div>
+}

@@ -1,0 +1,229 @@
+package pages
+
+import (
+	"fmt"
+	"meditrack/internal/db"
+	"meditrack/templates/layout"
+)
+
+templ VaultSearchPage() {
+	@layout.Base("Student Vault") {
+		<h2>📜 Student Vault</h2>
+		<p>Search your medical history and download official digital prescriptions.</p>
+		<article style="max-width: 600px; margin: 0 auto 2rem auto;">
+			<form hx-get="/vault/history" hx-target="#vault-results">
+				<label for="st_id">
+					Enter Your Student ID
+					<input type="number" id="st_id" name="st_id" placeholder="e.g. 20210014" required/>
+				</label>
+				<button type="submit">Access My Vault ➔</button>
+			</form>
+		</article>
+		<div id="vault-results"></div>
+	}
+}
+
+templ VaultStudentHistory(student db.Student, history []db.GetStudentPrescriptionListRow, labResults []db.GetStudentLabResultsRow) {
+	<div>
+		<!-- Student Banner -->
+		<article style="background: var(--pico-card-background-color); margin-bottom: 1.5rem;">
+			<header>
+				<h3>{ student.Name } <small>(Student ID: { fmt.Sprint(student.StID) })</small></h3>
+			</header>
+			<div class="grid">
+				<div><strong>Department:</strong> { student.Dept.String }</div>
+				<div><strong>Gender:</strong> { student.Gender }</div>
+				<div><strong>Blood Group:</strong> { student.BloodGroup.String }</div>
+				<div><strong>Contact:</strong> { student.Contact.String }</div>
+			</div>
+		</article>
+		<div class="grid">
+			<!-- Prescriptions List -->
+			<article>
+				<h4>📋 Prescription History ({ fmt.Sprint(len(history)) })</h4>
+				if len(history) == 0 {
+					<p><small>No prescription records found for this student.</small></p>
+				} else {
+					<table class="striped">
+						<thead>
+							<tr>
+								<th>Rx ID</th>
+								<th>Date</th>
+								<th>Prescribed By</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, h := range history {
+								<tr>
+									<td><strong>#{ fmt.Sprint(h.PID) }</strong></td>
+									<td>
+										if h.PDate.Valid {
+											{ h.PDate.Time.Format("2006-01-02") }
+										}
+									</td>
+									<td>Dr. { h.DoctorName }</td>
+									<td>
+										<a
+											href={ templ.SafeURL(fmt.Sprintf("/vault/rx/%d", h.PID)) }
+											target="_blank"
+											role="button"
+											class="outline"
+											style="padding: 0.2rem 0.6rem; font-size: 0.85rem;"
+										>
+											📄 View / Print Rx
+										</a>
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			</article>
+			<!-- Lab Results -->
+		</div>
+	</div>
+}
+
+templ PrescriptionPrintDocument(
+	header db.GetPrescriptionFullHeaderRow,
+	symptoms []string,
+	medicines []db.GetPrescriptionMedicinesRow,
+	tests []db.GetPrescriptionLabTestsRow,
+) {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="light">
+		<head>
+			<meta charset="UTF-8"/>
+			<title>Prescription #{ fmt.Sprint(header.PID) } - MediTrack Clinic</title>
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+			<style>
+				@media print {
+					.no-print { display: none !important; }
+					body { background: white !important; color: black !important; }
+					.rx-container { border: none !important; box-shadow: none !important; padding: 0 !important; }
+				}
+				.rx-container {
+					max-width: 800px;
+					margin: 2rem auto;
+					padding: 2.5rem;
+					border: 2px solid #2d3748;
+					border-radius: 8px;
+					background: #ffffff;
+				}
+				.rx-header {
+					border-bottom: 2px solid #2d3748;
+					padding-bottom: 1rem;
+					margin-bottom: 1.5rem;
+					display: flex;
+					justify-content: space-between;
+				}
+				.rx-symbol {
+					font-size: 2.5rem;
+					font-weight: bold;
+					font-family: serif;
+					margin: 1rem 0;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="no-print" style="max-width: 800px; margin: 1rem auto; text-align: right;">
+				<button onclick="window.print()" style="width: auto; padding: 0.5rem 1.5rem;">🖨️ Print / Save as PDF</button>
+			</div>
+			<div class="rx-container">
+				<!-- Header / Doctor Details -->
+				<div class="rx-header">
+					<div>
+						<h2 style="margin-bottom: 0;">Dr. { header.DoctorName }</h2>
+						<p style="margin-bottom: 0;"><strong>{ header.Specialization }</strong></p>
+						<small>MediTrack Campus Health Clinic</small>
+					</div>
+					<div style="text-align: right;">
+						<h3>🏥 MEDITRACK CLINIC</h3>
+						<p style="margin-bottom: 0;">
+							<strong>Date:</strong>
+							if header.PDate.Valid {
+								{ header.PDate.Time.Format("2006-01-02") }
+							}
+						</p>
+						<small>Rx ID: #{ fmt.Sprint(header.PID) }</small>
+					</div>
+				</div>
+				<!-- Patient Details -->
+				<div style="background: #f7fafc; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; display: grid; grid-template-columns: 2fr 1fr 1fr;">
+					<div><strong>Patient:</strong> { header.StudentName } (ID: { fmt.Sprint(header.StID) })</div>
+					<div><strong>Dept:</strong> { header.Dept.String }</div>
+					<div><strong>Gender/Blood:</strong> { header.Gender } / { header.BloodGroup.String }</div>
+				</div>
+				<!-- Symptoms -->
+				if len(symptoms) > 0 {
+					<div style="margin-bottom: 1.5rem;">
+						<strong>Chief Complaints / Symptoms:</strong>
+						<p style="margin-top: 0.2rem;">
+							for i, sym := range symptoms {
+								{ sym }
+								if i < len(symptoms)-1 {
+									<span>, </span>
+								}
+							}
+						</p>
+					</div>
+				}
+				<div class="rx-symbol">℞</div>
+				<!-- Prescribed Medicines -->
+				<div style="margin-bottom: 2rem;">
+					<h4>Prescribed Medicines</h4>
+					if len(medicines) == 0 {
+						<p>No medicines prescribed.</p>
+					} else {
+						<table style="width: 100%;">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Medicine Name</th>
+									<th>Type</th>
+									<th>Dosage / Instruction</th>
+								</tr>
+							</thead>
+							<tbody>
+								for idx, m := range medicines {
+									<tr>
+										<td>{ fmt.Sprint(idx + 1) }</td>
+										<td><strong>{ m.MedicineName }</strong></td>
+										<td>{ m.MedicineType }</td>
+										<td>{ m.Dosage.String }</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					}
+				</div>
+				<!-- Required Tests -->
+				if len(tests) > 0 {
+					<div style="margin-bottom: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+						<h4>Advised Diagnostic Tests</h4>
+						<ul>
+							for _, t := range tests {
+								<li>
+									<strong>{ t.TestName }</strong>
+									if t.TestResult.Valid && t.TestResult.String != "" {
+										<span>- <em>Result: { t.TestResult.String }</em></span>
+									}
+								</li>
+							}
+						</ul>
+					</div>
+				}
+				<!-- Footer Sign -->
+				<div style="margin-top: 4rem; display: flex; justify-content: space-between; align-items: flex-end;">
+					<small>Generated electronically by MediTrack Campus Health System.</small>
+					<div style="text-align: center; border-top: 1px solid #000; width: 200px; padding-top: 0.5rem;">
+						<strong>Dr. { header.DoctorName }</strong>
+						<br/>
+						<small>Authorized Signature</small>
+					</div>
+				</div>
+			</div>
+		</body>
+	</html>
+}

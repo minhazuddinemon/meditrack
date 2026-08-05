@@ -29,3 +29,23 @@ SELECT m.medicine_name, m.medicine_type, c.dosage
 FROM Contain c
 JOIN Medicine m ON c.medicine_name = m.medicine_name AND c.medicine_type = m.medicine_type
 WHERE c.p_id = ?;
+
+-- name: GetStudentPrescriptionHistory :many
+SELECT p.p_id, p.p_date, d.name AS doctor_name, d.specialization
+FROM Prescription p
+JOIN Doctor d ON p.doc_id = d.doc_id
+WHERE p.st_id = ?
+ORDER BY p.p_date DESC;
+
+-- name: GetStudentLabResults :many
+SELECT r.p_id, r.test_name, r.test_date, r.test_result, p.p_date
+FROM Requires r
+JOIN Prescription p ON r.p_id = p.p_id
+WHERE p.st_id = ?
+ORDER BY p.p_date DESC;
+
+-- name: GetAllMedicines :many
+SELECT medicine_name, medicine_type, manufacturer FROM Medicine ORDER BY medicine_name ASC;
+
+-- name: GetAllTests :many
+SELECT test_name, test_fee FROM Test ORDER BY test_name ASC;

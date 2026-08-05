@@ -1,0 +1,32 @@
+package layout
+
+templ Base(title string) {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="light">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } - MediTrack</title>
+			<!-- Pico CSS -->
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+			<!-- HTMX -->
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+		</head>
+		<body>
+			<nav class="container">
+				<ul>
+					<li><strong>🏥 MediTrack Clinic</strong></li>
+				</ul>
+				<ul>
+					<li><a href="/" class="secondary">Home</a></li>
+					<li><a href="/reception">Reception</a></li>
+					<li><a href="/doctor">Doctor Console</a></li>
+					<li><a href="/vault">Student Vault</a></li>
+				</ul>
+			</nav>
+			<main class="container">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}

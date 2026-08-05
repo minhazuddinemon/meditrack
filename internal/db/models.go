@@ -21,6 +21,7 @@ type Doctor struct {
 	Name           string `json:"name"`
 	Specialization string `json:"specialization"`
 	Contact        string `json:"contact"`
+	Password       string `json:"password"`
 }
 
 type Medicine struct {
@@ -68,4 +69,6 @@ type Token struct {
 	VisitDate time.Time `json:"visit_date"`
 	VisitTime time.Time `json:"visit_time"`
 	StID      int32     `json:"st_id"`
+	DocID     int32     `json:"doc_id"`
+	Status    string    `json:"status"`
 }
