@@ -169,7 +169,7 @@ func (h *DoctorHandler) CreatePrescription(w http.ResponseWriter, r *http.Reques
 	}
 
 	// 1. Success message
-	w.Write([]byte(fmt.Sprintf(`<p style="color: green; font-weight: bold;">✅ Rx #%d saved & Patient removed from queue!</p>`, pID)))
+	fmt.Fprintf(w, `<p style="color: green; font-weight: bold;">✅ Rx #%d saved & Patient removed from queue!</p>`, pID)
 
 	// 2. Return updated queue via HTMX Out-of-Band (OOB) Swap to instantly update left panel
 	updatedTokens, _ := h.Queries.GetDoctorQueueToday(ctx, int32(docID))
