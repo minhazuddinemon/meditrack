@@ -44,7 +44,16 @@ func (h *ReceptionHandler) IssueToken(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please select a doctor", http.StatusBadRequest)
 		return
 	}
-
+	// 1. Verify if Student exists in DB
+	student, err := h.Queries.GetStudentByID(ctx, int32(stID))
+	if err != nil || student.StID == 0 {
+		fmt.Fprintf(w,
+			`<div style="background: #f8d7da; color: #721c24; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #f5c6cb;">
+				<strong>❌ Student ID %d is not registered!</strong><br/>
+				<small>Please register the student in the "Quick Register Student" form below before issuing a token.</small>
+			</div>`, stID)
+		return
+	}
 	// 1. Get next token number for today
 	nextToken, err := h.Queries.GetNextTokenIDForToday(ctx)
 	if err != nil {

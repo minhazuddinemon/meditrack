@@ -47,7 +47,7 @@ func Reception(tokens []db.GetTodayTokensRow, doctors []db.GetAllDoctorsRow) tem
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h2>🎟️ Reception Desk</h2><div class=\"grid\"><div><article><h4>1. Lookup & Issue Token</h4><form hx-post=\"/reception/token\" hx-target=\"#queue-table\" hx-swap=\"outerHTML\"><label for=\"st_id\">Student ID <input type=\"number\" id=\"st_id\" name=\"st_id\" placeholder=\"e.g. 20210014\" required></label> <label for=\"doc_id\">Select Doctor <select id=\"doc_id\" name=\"doc_id\" required><option value=\"\" disabled selected>-- Choose Assigned Doctor --</option> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h2>🎟️ Reception Desk</h2><div class=\"grid\"><div><article><h4>1. Lookup & Issue Token</h4><form hx-post=\"/reception/token\" hx-target=\"#queue-table\" hx-swap=\"outerHTML\"><div id=\"token-message\"></div><label for=\"st_id\">Student ID <input type=\"number\" id=\"st_id\" name=\"st_id\" placeholder=\"e.g. 20210014\" required></label> <label for=\"doc_id\">Select Doctor <select id=\"doc_id\" name=\"doc_id\" required><option value=\"\" disabled selected>-- Choose Assigned Doctor --</option> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -59,7 +59,7 @@ func Reception(tokens []db.GetTodayTokensRow, doctors []db.GetAllDoctorsRow) tem
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.ResolveAttributeValue(fmt.Sprint(d.DocID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 26, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 27, Col: 44}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 				if templ_7745c5c3_Err != nil {
@@ -72,7 +72,7 @@ func Reception(tokens []db.GetTodayTokensRow, doctors []db.GetAllDoctorsRow) tem
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(d.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 27, Col: 22}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 28, Col: 22}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -85,7 +85,7 @@ func Reception(tokens []db.GetTodayTokensRow, doctors []db.GetAllDoctorsRow) tem
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(d.Specialization)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 27, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 28, Col: 44}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -157,7 +157,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(t.TokenID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 89, Col: 42}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 90, Col: 42}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -170,7 +170,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(t.VisitTime)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 90, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 91, Col: 23}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -183,7 +183,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(t.StudentName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 92, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 93, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -196,7 +196,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(t.StID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 94, Col: 38}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 95, Col: 38}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -209,7 +209,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(t.Dept.String)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 94, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 95, Col: 58}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -222,7 +222,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(t.DoctorName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 97, Col: 25}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 98, Col: 25}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -235,7 +235,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(t.Specialization)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 99, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 100, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -268,7 +268,7 @@ func TodayQueueTable(tokens []db.GetTodayTokensRow) templ.Component {
 				var templ_7745c5c3_Var14 string
 				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(t.Status)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 109, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/reception.templ`, Line: 110, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {

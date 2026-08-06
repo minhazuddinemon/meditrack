@@ -14,6 +14,7 @@ templ Reception(tokens []db.GetTodayTokensRow, doctors []db.GetAllDoctorsRow) {
 				<article>
 					<h4>1. Lookup & Issue Token</h4>
 					<form hx-post="/reception/token" hx-target="#queue-table" hx-swap="outerHTML">
+						<div id="token-message"></div>
 						<label for="st_id">
 							Student ID
 							<input type="number" id="st_id" name="st_id" placeholder="e.g. 20210014" required/>
